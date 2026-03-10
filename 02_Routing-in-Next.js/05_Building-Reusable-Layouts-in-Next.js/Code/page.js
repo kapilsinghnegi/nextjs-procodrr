@@ -1,12 +1,13 @@
 import Link from "next/link";
-import Component from "../components/page";
 
 export default function Home() {
   return (
-    <div className="grow">
+    <div>
       <h1 className="text-3xl font-bold">Welcome to My App</h1>
       <p>
-        <Link href="/about">About</Link>
+        <Link href="/about">
+          About
+        </Link>
       </p>
       <p>
         <Link href="/services">Services</Link>
@@ -17,7 +18,6 @@ export default function Home() {
       <p>
         <Link href="/files">Files</Link>
       </p>
-      <Component />
     </div>
   );
 }

@@ -12,10 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: {
-    template: "%s | My App",
-    default: "My App",
-  },
+  title: "My App",
 };
 
 export default function RootLayout({ children }) {
