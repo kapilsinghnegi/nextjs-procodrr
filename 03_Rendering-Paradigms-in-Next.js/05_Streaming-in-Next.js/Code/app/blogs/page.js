@@ -1,5 +1,3 @@
-// "use client";
-
 import Link from "next/link";
 import { Suspense } from "react";
 import Comments from "@/components/Comments";
