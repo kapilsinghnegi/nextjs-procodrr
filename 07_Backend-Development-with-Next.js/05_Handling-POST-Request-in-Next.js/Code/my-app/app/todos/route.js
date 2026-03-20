@@ -19,6 +19,6 @@ export async function POST(request) {
     completed: false,
   };
   todos.push(newTodo);
-  await writeFile("todos.json", JSON.stringify(todos, null, 2));
+  writeFile("todos.json", JSON.stringify(todos, null, 2));
   return Response.json(newTodo);
 }

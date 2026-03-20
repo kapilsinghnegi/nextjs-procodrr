@@ -1,17 +1,7 @@
 [
   {
-    "id": 1,
-    "text": "Learn Next.js 15",
+    "id": "d65a8b69-70a2-4906-b1a1-06be35579ffc",
+    "text": "Master Web Development",
     "completed": false
-  },
-  {
-    "id": 2,
-    "text": "Master Node.js",
-    "completed": true
-  },
-  {
-    "id": 3,
-    "text": "Learn MongoDB",
-    "completed": true
   }
 ]
