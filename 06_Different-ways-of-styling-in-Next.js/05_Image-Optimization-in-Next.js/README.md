@@ -21,4 +21,4 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-We can also pass a property `loader` which is basically a function which received props as object which contains the `src`, `width`, `quality` etc. and returns an object which contains `src`, `width`, `quality` etc.. It is used to control the properties when we get images from providers like Cloudinary. 
+We can also pass a property `loader` which is basically a function which received props as object which contains the `src`, `width`, `quality` etc. and returns an object which contains `src`, `width`, `quality` etc.. It is used to control the properties when we get images from providers like Cloudinary.
