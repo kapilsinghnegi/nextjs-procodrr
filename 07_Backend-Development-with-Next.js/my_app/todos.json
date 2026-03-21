@@ -1,7 +1,12 @@
 [
   {
     "id": "d65a8b69-70a2-4906-b1a1-06be35579ffc",
-    "text": "Master Web Development",
+    "text": "Master Web Dev",
+    "completed": false
+  },
+  {
+    "id": "c3d92a66-29e7-4622-b194-ddad1f7a88e9",
+    "text": "Learn Next",
     "completed": false
   }
 ]

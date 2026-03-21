@@ -28,34 +28,24 @@ export default function Home() {
   };
 
   // Delete todo
-  const deleteTodo = async id => {
-    const res = await fetch(`/todos/${id}`, { method: "DELETE" });
-    if (res.status === 204) {
-      fetchTodos();
-    }
+  const deleteTodo = id => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   // Toggle todo completion
-  const toggleTodo = async id => {
-    const todo = todos.find(todo => todo.id === id);
-    const res = await fetch(`/todos/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({ completed: !todo.completed }),
-    });
-    if (res.status === 200) {
-      fetchTodos();
-    }
+  const toggleTodo = id => {
+    setTodos(
+      todos.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      ),
+    );
   };
 
   // Update todo text
-  const updateTodo = async (id, newText) => {
-    const res = await fetch(`/todos/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({ text: newText }),
-    });
-    if (res.status === 200) {
-      fetchTodos();
-    }
+  const updateTodo = (id, newText) => {
+    setTodos(
+      todos.map(todo => (todo.id === id ? { ...todo, text: newText } : todo)),
+    );
   };
 
   useEffect(() => {

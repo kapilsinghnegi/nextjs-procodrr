@@ -1,9 +1,13 @@
 import todos from "../../todos";
-import { readFile, writeFile } from "fs/promises";
+import { writeFile } from "fs/promises";
 
-export async function GET() {
-  const todosJSONString = await readFile("./todos.json", "utf-8");
-  const todos = JSON.parse(todosJSONString);
+export function GET() {
+  //   console.log("Running GET route handler");
+  // return new Response(JSON.stringify(todosData), {
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  // });
   return Response.json(todos);
 }
 
