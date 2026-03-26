@@ -1,6 +1,6 @@
 import { writeFile } from "fs/promises";
 import { connectDB } from "@/lib/connectDB";
-import Todo from "@/models/todo.model";
+import Todo from "@/models/todo.model.js";
 import todos from "../../todos";
 
 await connectDB();

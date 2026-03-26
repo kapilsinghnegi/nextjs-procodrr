@@ -1,7 +1,5 @@
 import { connectDB } from "@/lib/connectDB";
 import Todo from "@/models/todo.model.js";
-import todos from "@/todos.json";
-import { writeFile } from "fs/promises";
 
 export async function GET(_, { params }) {
   const { id } = await params;
