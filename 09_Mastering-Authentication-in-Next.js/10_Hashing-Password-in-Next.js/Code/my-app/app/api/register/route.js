@@ -16,8 +16,12 @@ export const POST = async request => {
       return Response.json({ error: "User already exists" }, { status: 409 });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ name, email, password: hashedPassword });
-    return Response.json(newUser, { status: 201 });
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    return Response.json({ name, email }, { status: 201 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

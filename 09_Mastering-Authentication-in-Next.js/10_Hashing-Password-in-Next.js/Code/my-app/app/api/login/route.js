@@ -11,8 +11,12 @@ export const POST = async req => {
   const { email, password } = await req.json();
   try {
     const user = await User.findOne({ email });
+    if (!user) {
+      return Response.json({ error: "Invalid credentials" }, { status: 400 });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!user || !isValidPassword) {
+    if (!isValidPassword) {
       return Response.json({ error: "Invalid credentials" }, { status: 400 });
     }
 
