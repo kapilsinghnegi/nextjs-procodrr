@@ -1,9 +1,89 @@
-"use client";
+# Implementing Login Feature using Server Action
+
+```js
+// @/lib/schema/userSchema.js
+import * as z from "zod";
+
+export const loginSchema = z.object({
+  email: z.email("Enter a valid email"),
+  password: z
+    .string()
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+      "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number",
+    ),
+});
+
+export const registerSchema = loginSchema.extend({
+  name: z
+    .string()
+    .min(3, "Name must be at least 3 characters long")
+    .max(30, "Name must be at most 30 characters long"),
+});
+
+// @/app/actions/userAction.js
+...
+export async function loginUser(_, formData) {
+  const { data, error, success } = loginSchema.safeParse(formData);
+
+  if (!success) {
+    console.log(z.flattenError(error).fieldErrors);
+    return { errors: z.flattenError(error).fieldErrors, success: false };
+  }
+  await connectDB();
+  const cookieStore = await cookies();
+  const { email, password } = data;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return {
+        errors: { email: "Invalid credentials" },
+        success: false,
+      };
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return {
+        errors: { password: "Invalid credentials" },
+        success: false,
+      };
+    }
+
+    const existingSessions = await Session.find({ userId: user._id });
+    if (existingSessions.length >= 2) {
+      await Session.deleteOne({
+        _id: existingSessions[0]._id,
+      });
+    }
+
+    const session = await Session.create({ userId: user._id });
+
+    cookieStore.set("sid", signCookie(session.id), {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60,
+    });
+
+    return {
+      success: true,
+      message: `${email} logged in successfully`,
+    };
+  } catch (error) {
+    return {
+      error,
+      errors: { email: "Something went wrong" },
+      success: false,
+    };
+  }
+}
+
+// @/app/login/page.js
+("use client");
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
-import { loginUser } from "../actions/userActions";
+import { loginUser } from "../actions/userAction";
 import { loginSchema } from "@/lib/schema/userSchema";
 
 export default function LoginPage() {
@@ -53,7 +133,6 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
-              name="email"
               className="mt-1 w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-900 dark:text-white"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -69,7 +148,6 @@ export default function LoginPage() {
             </label>
             <input
               type="password"
-              name="password"
               className="mt-1 w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-900 dark:text-white"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -99,3 +177,4 @@ export default function LoginPage() {
     </div>
   );
 }
+```

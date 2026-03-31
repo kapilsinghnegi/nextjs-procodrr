@@ -1,15 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "../actions/userAction";
+import { registerSchema } from "@/lib/schema/userSchema";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [state, formAction, isPending] = useActionState(registerUser, {});
   const [name, setName] = useState("ProCodrr");
   const [email, setEmail] = useState("procodrr@gmail.com");
-  const [password, setPassword] = useState("123456");
+  const [password, setPassword] = useState("ABcd1234");
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (state.success) {
+      router.push("/login");
+    } else {
+      setErrors(state.errors);
+    }
+  }, [state]);
+
+  const handleFormAction = async formData => {
+    const newUser = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
+    const { data, error, success } = registerSchema.safeParse(newUser);
+
+    if (!success) {
+      return setErrors(z.flattenError(error).fieldErrors);
+    }
+
+    setErrors({});
+    return formAction(data);
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center py-8 px-4 sm:px-6">
@@ -20,7 +48,7 @@ export default function RegisterPage() {
           </h1>
         </header>
         <h2 className="text-2xl font-semibold mb-4">Register</h2>
-        <form action={registerUser} className="space-y-4">
+        <form action={handleFormAction} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Name
@@ -33,6 +61,9 @@ export default function RegisterPage() {
               onChange={e => setName(e.target.value)}
               required
             />
+            {errors?.name && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">{errors.name}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -46,6 +77,9 @@ export default function RegisterPage() {
               onChange={e => setEmail(e.target.value)}
               required
             />
+            {errors?.email && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">{errors.email}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -59,10 +93,16 @@ export default function RegisterPage() {
               onChange={e => setPassword(e.target.value)}
               required
             />
+            {errors?.password && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">
+                {errors.password}
+              </p>
+            )}
           </div>
           <button
             type="submit"
-            className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white py-2 rounded-md font-medium hover:opacity-90"
+            className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white py-2 rounded-md font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-75"
+            disabled={isPending}
           >
             Register
           </button>

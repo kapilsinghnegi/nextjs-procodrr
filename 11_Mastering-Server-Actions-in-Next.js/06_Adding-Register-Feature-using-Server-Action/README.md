@@ -1,17 +1,87 @@
-"use client";
+# Registering User using Server Action
 
-import { useActionState, useState } from "react";
+Now, we will implement the register feature using server action.
+
+```js
+// @/app/actions/userActions.js
+"use server";
+
+import z from "zod";
+import bcrypt from "bcryptjs";
+import { registerSchema } from "@/lib/schema/userSchema";
+import { connectDB } from "@/lib/connectDB";
+import User from "@/models/user.model.js";
+
+export async function registerUser(_, formData) {
+  console.log(formData);
+  const { data, error, success } = registerSchema.safeParse(formData);
+
+  if (!success) {
+    console.log(z.flattenError(error).fieldErrors);
+    return { errors: z.flattenError(error).fieldErrors, success: false };
+  }
+  await connectDB();
+  try {
+    const { name, email, password } = data;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    return { success: true, message: `${email} registered successfully` };
+  } catch (error) {
+    if (error.code === 11000) {
+      return { errors: { email: "Email already exists" } };
+    } else {
+      return { errors: { name: "Something went wrong" } };
+    }
+  }
+
+  return { message: `${formData.email} registered`, data };
+}
+
+// @/app/register/page.js
+("use client");
+
+import { useActionState, useEffect, useState } from "react";
+import z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { registerUser } from "../actions/userAction";
+import { registerUser } from "@/app/actions/userAction";
+import { registerSchema } from "@/lib/schema/userSchema";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(registerUser, {});
-  console.log(state, isPending);
   const [name, setName] = useState("ProCodrr");
   const [email, setEmail] = useState("procodrr@gmail.com");
-  const [password, setPassword] = useState("123456");
+  const [password, setPassword] = useState("ABcd1234");
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (state.success) {
+      router.push("/login");
+    } else {
+      setErrors(state.errors);
+    }
+  }, [state]);
+
+  const handleFormAction = async formData => {
+    const newUser = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
+    const { data, error, success } = registerSchema.safeParse(newUser);
+
+    if (!success) {
+      return setErrors(z.flattenError(error).fieldErrors);
+    }
+
+    setErrors({});
+    return formAction(data);
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center py-8 px-4 sm:px-6">
@@ -22,7 +92,7 @@ export default function RegisterPage() {
           </h1>
         </header>
         <h2 className="text-2xl font-semibold mb-4">Register</h2>
-        <form action={formAction} className="space-y-4">
+        <form action={handleFormAction} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Name
@@ -35,6 +105,9 @@ export default function RegisterPage() {
               onChange={e => setName(e.target.value)}
               required
             />
+            {errors?.name && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">{errors.name}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -48,6 +121,9 @@ export default function RegisterPage() {
               onChange={e => setEmail(e.target.value)}
               required
             />
+            {errors?.email && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">{errors.email}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -61,9 +137,12 @@ export default function RegisterPage() {
               onChange={e => setPassword(e.target.value)}
               required
             />
+            {errors?.password && (
+              <p className="text-xs text-red-500 mt-1 -mb-2">
+                {errors.password}
+              </p>
+            )}
           </div>
-          {/* <p className="text-xs text-green-500">{state?.message || ""}</p> */}
-          <p className="text-xs text-red-500">{state?.error || ""}</p>
           <button
             type="submit"
             className="w-full bg-linear-to-r from-blue-500 to-purple-600 text-white py-2 rounded-md font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-75"
@@ -82,3 +161,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+```
